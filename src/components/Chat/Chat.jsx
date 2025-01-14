@@ -14,12 +14,14 @@ const Chat = () => {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
 
-  const ENDPOINT = "localhost:5000";
+  const ENDPOINT = process.env.REACT_APP_ENDPOINT;
 
   useEffect(() => {
     const { name, room } = queryString.parse(window.location.search);
 
-    socket = io(ENDPOINT);
+    if (!socket) {
+      socket = io(ENDPOINT);
+    }
 
     setName(name);
     setRoom(room);
@@ -27,27 +29,27 @@ const Chat = () => {
     socket.emit("join", { name, room }, () => {});
 
     return () => {
-      socket.emit("disconnect");
       socket.off();
     };
-  }, [ENDPOINT, window.location.search]);
+  }, [ENDPOINT]);
 
   useEffect(() => {
     socket.on("message", (message) => {
-      setMessages([...messages, message]);
+      setMessages((prevMessages) => [...prevMessages, message]);
     });
-  }, [messages]);
+  }, []);
 
   //function for sending messages
   const sendMessage = (event) => {
     event.preventDefault();
 
     if (message) {
-      socket.emit("sendMessage", message, () => setMessage(""));
+      const sanitizedMessage = message
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+      socket.emit("sendMessage", sanitizedMessage, () => setMessage(""));
     }
   };
-
-  console.log(message, messages);
 
   return (
     <div className="outerContainer">
