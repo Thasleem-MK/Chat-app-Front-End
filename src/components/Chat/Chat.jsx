@@ -14,7 +14,11 @@ const Chat = () => {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
 
-  const ENDPOINT = process.env.REACT_APP_ENDPOINT;
+  const endpoint = process.env.REACT_APP_ENDPOINT;
+  if (!endpoint) {
+    throw new Error("Missing endpoint");
+  }
+  const ENDPOINT = endpoint;
 
   useEffect(() => {
     const { name, room } = queryString.parse(window.location.search);
